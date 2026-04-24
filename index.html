@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>CHEPOON PAK TRADING</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <style>
+        body {
+            font-family: Arial;
+            text-align: center;
+            background-color: #f5f5f5;
+        }
+
+        h1 {
+            font-size: 45px;
+        }
+
+        .search-box {
+            font-size: 25px;
+            padding: 15px;
+            width: 80%;
+            max-width: 400px;
+            margin: 20px;
+        }
+
+        .item {
+            background: white;
+            margin: 20px;
+            padding: 20px;
+            border-radius: 20px;
+            box-shadow: 0 0 10px gray;
+        }
+
+        .img-box {
+            width: 180px;
+            height: 180px;
+            overflow: hidden;
+            margin: auto;
+        }
+
+        .img-box img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 10px;
+            cursor: pointer;
+        }
+
+        .big-btn {
+            font-size: 40px;
+            padding: 20px 30px;
+            margin: 15px;
+        }
+
+        .stock {
+            font-size: 40px;
+            margin: 15px;
+        }
+
+        .price {
+            font-size: 28px;
+        }
+
+        .no-result {
+            font-size: 30px;
+            color: red;
+        }
+
+        /* 放大图片（可缩放） */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.9);
+            overflow: auto;
+        }
+
+        .modal img {
+            width: 90%;
+            margin-top: 50px;
+            transform-origin: center;
+        }
+
+        .close {
+            color: white;
+            font-size: 30px;
+            position: absolute;
+            top: 20px;
+            right: 30px;
+        }
+    </style>
+</head>
+
+<body>
+
+<h1>CHEPOON PAK TRADING</h1>
+
+<input 
+    type="text" 
+    class="search-box" 
+    placeholder="请寻找您的商品"
+    oninput="search(this.value)"
+>
+
+<div id="items"></div>
+
+<!-- 图片放大 -->
+<div id="modal" class="modal" onclick="closeModal()">
+    <div class="close">X</div>
+    <img id="modalImg">
+</div>
+
+<script>
+
+let products = [
+    { name: "Hennessy XO", price: 1000, stock: 10, img: "hennessy-vsop.jpg" },
+    { name: "Meukow", price: 500, stock: 5, img: "meukow-vsop-superior-cognac.jpg" },
+    { name: "Wine 3", price: 300, stock: 8, img: "wine3.jpg" }
+];
+
+let current = [...products]; // ⭐ 关键：不破坏原数据
+
+function search(keyword){
+    current = products.filter(p =>
+        p.name.toLowerCase().includes(keyword.toLowerCase())
+    );
+    render();
+}
+
+// 保存
+function save(){
+    localStorage.setItem("data", JSON.stringify(products));
+}
+
+// 显示
+function render(){
+
+    let html = "";
+
+    if(current.length === 0){
+        html = `<div class="no-result">找不到商品</div>`;
+    } else {
+
+        current.forEach((p, index) => {
+
+            html += `
+            <div class="item">
+                <h2>${index + 1}. ${p.name}</h2>
+
+                <div class="img-box">
+                    <img src="${p.img}" onclick="openModal('${p.img}')"
+                    onerror="this.src='https://via.placeholder.com/180?text=No+Image'">
+                </div>
+
+                <p class="price">价格: RM ${p.price}</p>
+
+                <div class="stock">库存: ${p.stock}</div>
+
+                <button class="big-btn" onclick="plus('${p.name}')">+</button>
+                <button class="big-btn" onclick="minus('${p.name}')">-</button>
+            </div>
+            `;
+        });
+    }
+
+    document.getElementById("items").innerHTML = html;
+}
+
+// ➕
+function plus(name){
+    let item = products.find(p => p.name === name);
+    item.stock++;
+    save();
+    render();
+}
+
+// ➖
+function minus(name){
+    let item = products.find(p => p.name === name);
+    if(item.stock > 0){
+        item.stock--;
+    }
+    save();
+    render();
+}
+
+// 🖼 放大图片
+function openModal(img){
+    let modal = document.getElementById("modal");
+    let modalImg = document.getElementById("modalImg");
+
+    modal.style.display = "block";
+    modalImg.src = img;
+
+    // 👉 手机可缩放（pinch zoom）
+    modalImg.style.transform = "scale(1)";
+    let scale = 1;
+
+    modalImg.ontouchmove = function(e){
+        if(e.touches.length === 2){
+            scale += 0.02;
+            modalImg.style.transform = `scale(${scale})`;
+        }
+    }
+}
+
+function closeModal(){
+    document.getElementById("modal").style.display = "none";
+}
+
+render();
+
+</script>
+
+</body>
+</html>
